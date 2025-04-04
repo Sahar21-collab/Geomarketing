@@ -1,0 +1,217 @@
+<!-- Exercise 1: Basic Map -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Geomarketing Exercises</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+</head>
+<body>
+  <h2>Exercise 1: Display a Basic Map</h2>
+  <div id="map1" style="height: 400px;"></div>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var map1 = L.map('map1').setView([48.8566, 2.3522], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map1);
+  </script>
+
+
+/////////////////////////////////////////////////////
+
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Exercise 2: Map Centered on Lyon</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map2 {
+      height: 400px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Exercise 2: Change the Map Center to Lyon</h2>
+  <div id="map2"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script>
+    var map2 = L.map('map2').setView([45.75, 4.85], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map2);
+  </script>
+</body>
+</html>
+
+
+/////////////////////////////////////////
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Exercise 5: Load Markers from CSV</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 400px;
+      margin: 20px 0;
+    }
+    textarea {
+      width: 100%;
+      height: 180px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Exercise 5: Load Store Data from CSV</h2>
+  <p>Paste CSV data in this format: <code>latitude,longitude,store_name,type,monthly_sales</code></p>
+
+  <textarea id="csvInput">latitude,longitude,store_name,type,monthly_sales
+48.8566,2.3522,Paris Central,Clothing,75000
+45.7640,4.8357,Lyon Bellecour,Electronics,62000
+43.6108,3.8767,Montpellier Mall,Grocery,58000
+44.8378,-0.5792,Bordeaux Downtown,Furniture,54000
+43.2965,5.3698,Marseille Vieux-Port,Grocery,70000
+48.5734,7.7521,Strasbourg Nord,Clothing,46000
+47.2184,-1.5536,Nantes Centre,Electronics,51000
+50.6292,3.0573,Lille Grand Place,Furniture,53000
+49.2583,4.0317,Reims Est,Clothing,39000
+45.1885,5.7245,Grenoble Sud,Grocery,42000</textarea>
+
+  <br>
+  <button onclick="loadCSV()">Load Markers from CSV</button>
+
+  <div id="map"></div>
+
+  <!-- JS Libraries -->
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/papaparse@5.3.2/papaparse.min.js"></script>
+  <script>
+    const map = L.map('map').setView([46.5, 2.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    function loadCSV() {
+      const csvData = document.getElementById("csvInput").value;
+
+      Papa.parse(csvData, {
+        header: true,
+        skipEmptyLines: true,
+        complete: function(results) {
+          console.log('Parsed rows:', results.data);
+          results.data.forEach(row => {
+            const lat = parseFloat(row.latitude);
+            const lng = parseFloat(row.longitude);
+            const name = row.store_name;
+            const type = row.type;
+            const sales = row.monthly_sales;
+
+            if (!isNaN(lat) && !isNaN(lng)) {
+              L.marker([lat, lng]).addTo(map).bindPopup(
+                `<strong>${name}</strong><br>Type: ${type}<br>Monthly Sales: €${sales}`
+              );
+            }
+          });
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+
+///////////////////////////////////////////////////  EXERSICE ////////////////////////////////////////////////////////
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>Where NOT to Open New Stores</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <style>
+    #map {
+      height: 500px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Exercise: Where NOT to Open New Stores</h2>
+  <p><strong>Goal:</strong> Identify cities where opening a new store is not recommended due to store density or low population coverage.</p>
+  <div id="map"></div>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <script>
+    const storeLocations = [
+      { name: "Paris Central", lat: 48.8566, lon: 2.3522 },
+      { name: "Paris North", lat: 48.88, lon: 2.35 },
+      { name: "Paris South", lat: 48.86, lon: 2.34 },
+      { name: "Lyon Center", lat: 45.76, lon: 4.84 },
+      { name: "Lyon East", lat: 45.75, lon: 4.86 },
+      { name: "Montpellier", lat: 43.6, lon: 3.88 },
+      { name: "Nice", lat: 43.7, lon: 7.26 }
+    ];
+
+    const cities = [
+      { name: "Paris", lat: 48.8566, lon: 2.3522, population: 2200000 },
+      { name: "Lyon", lat: 45.75, lon: 4.85, population: 515000 },
+      { name: "Marseille", lat: 43.3, lon: 5.37, population: 870000 },
+      { name: "Bordeaux", lat: 44.84, lon: -0.57, population: 250000 },
+      { name: "Nice", lat: 43.7, lon: 7.26, population: 340000 },
+      { name: "Toulouse", lat: 43.6, lon: 1.44, population: 480000 },
+      { name: "Nantes", lat: 47.22, lon: -1.55, population: 310000 }
+    ];
+
+    const map = L.map('map').setView([46.5, 2.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Draw store markers and 5km radius
+    storeLocations.forEach(store => {
+      const marker = L.circleMarker([store.lat, store.lon], {
+        radius: 6,
+        color: 'blue',
+        fillOpacity: 0.6
+      }).addTo(map).bindPopup(`<strong>${store.name}</strong>`);
+
+      L.circle([store.lat, store.lon], {
+        radius: 5000,
+        color: 'blue',
+        fillOpacity: 0.1
+      }).addTo(map);
+    });
+
+    // Analyze cities for store proximity
+    cities.forEach(city => {
+      const cityPoint = turf.point([city.lon, city.lat]);
+      const nearbyStores = storeLocations.filter(store => {
+        const storePoint = turf.point([store.lon, store.lat]);
+        const dist = turf.distance(cityPoint, storePoint, { units: 'kilometers' });
+        return dist <= 5;
+      });
+
+      const markerColor = (nearbyStores.length >= 2 || city.population < 400000) ? 'red' : 'green';
+      const message = `<strong>${city.name}</strong><br>Population: ${city.population}<br>Nearby stores: ${nearbyStores.length}<br><strong>${markerColor === 'red' ? 'Not recommended' : 'Safe to expand'}</strong>`;
+
+      L.circleMarker([city.lat, city.lon], {
+        radius: 8,
+        color: markerColor,
+        fillOpacity: 0.5
+      }).addTo(map).bindPopup(message);
+    });
+  </script>
+</body>
+</html>
+
