@@ -314,7 +314,6 @@ https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js
 https://unpkg.com/leaflet/dist/leaflet.js
 
 
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -345,7 +344,6 @@ https://unpkg.com/leaflet/dist/leaflet.js
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 
   <script>
-    // Your stores with sales data
     const yourStores = [
       { name: "Paris Central", lat: 48.8566, lon: 2.3522, sales: 72000 },
       { name: "Paris North", lat: 48.88, lon: 2.35, sales: 68000 },
@@ -354,14 +352,12 @@ https://unpkg.com/leaflet/dist/leaflet.js
       { name: "Nice", lat: 43.7, lon: 7.26, sales: 30000 }
     ];
 
-    // Competitor stores
     const competitors = [
       { name: "Z-Store Paris East", lat: 48.865, lon: 2.36 },
       { name: "Y-Mart Lyon South", lat: 45.74, lon: 4.83 },
       { name: "QuickMart Nice", lat: 43.705, lon: 7.265 }
     ];
 
-    // Cities with population and income
     const cities = [
       { name: "Paris", lat: 48.8566, lon: 2.3522, population: 2200000, income: 3000 },
       { name: "Lyon", lat: 45.75, lon: 4.85, population: 515000, income: 2800 },
@@ -370,7 +366,6 @@ https://unpkg.com/leaflet/dist/leaflet.js
       { name: "Bordeaux", lat: 44.84, lon: -0.57, population: 250000, income: 2900 }
     ];
 
-    // Initialize map
     const map = L.map('map').setView([46.5, 2.5], 6);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
@@ -379,16 +374,20 @@ https://unpkg.com/leaflet/dist/leaflet.js
     // Show your stores
     yourStores.forEach(store => {
       const color = store.sales < 50000 ? 'orange' : 'blue';
+
+      // Add main marker with popup
       L.circleMarker([store.lat, store.lon], {
         radius: 6,
         color,
         fillOpacity: 0.8
       }).addTo(map).bindPopup(`<strong>${store.name}</strong><br>Sales: €${store.sales}`);
 
+      // Add transparent influence circle, but disable interaction
       L.circle([store.lat, store.lon], {
         radius: 5000,
         color,
-        fillOpacity: 0.1
+        fillOpacity: 0.1,
+        interactive: false // <- key fix!
       }).addTo(map);
     });
 
@@ -440,4 +439,140 @@ https://unpkg.com/leaflet/dist/leaflet.js
 </html>
 
 
+
 //////////////////////////////
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>GeoMarketing Strategy Map</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
+  />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 10px;
+    }
+    #map {
+      height: 600px;
+      margin-top: 15px;
+    }
+  </style>
+</head>
+<body>
+  <h2>📍 GeoMarketing Strategy Map</h2>
+  <p><strong>Task:</strong> Analyze where to open two new stores based on demographics, proximity, and performance.</p>
+  <div id="map"></div>
+
+  <!-- Leaflet & Turf.js -->
+  <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+
+  <script>
+    // ==== Dataset: Your stores ====
+    const yourStores = [
+      { name: "Paris Central", lat: 48.8566, lon: 2.3522, sales: 72000 },
+      { name: "Lyon East", lat: 45.75, lon: 4.86, sales: 41000 },
+      { name: "Nice", lat: 43.7, lon: 7.26, sales: 30000 }
+    ];
+
+    // ==== Competitor stores ====
+    const competitors = [
+      { name: "Z-Store Paris East", lat: 48.865, lon: 2.36 },
+      { name: "Y-Mart Lyon South", lat: 45.74, lon: 4.83 },
+      { name: "QuickMart Nice", lat: 43.705, lon: 7.265 }
+    ];
+
+    // ==== Cities (demographics) ====
+    const cities = [
+      { name: "Paris", lat: 48.8566, lon: 2.3522, population: 2200000, income: 3000 },
+      { name: "Lyon", lat: 45.75, lon: 4.85, population: 515000, income: 2800 },
+      { name: "Nice", lat: 43.7, lon: 7.26, population: 340000, income: 2600 },
+      { name: "Toulouse", lat: 43.6, lon: 1.44, population: 480000, income: 2700 },
+      { name: "Bordeaux", lat: 44.84, lon: -0.57, population: 250000, income: 2900 },
+      { name: "Nantes", lat: 47.22, lon: -1.55, population: 320000, income: 2800 }
+    ];
+
+    // ==== Init Map ====
+    const map = L.map('map').setView([46.5, 2.5], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+
+    // ==== Show Your Stores ====
+    yourStores.forEach(store => {
+      const color = store.sales < 50000 ? 'orange' : 'blue';
+
+      L.circleMarker([store.lat, store.lon], {
+        radius: 6,
+        color,
+        fillOpacity: 0.8
+      }).addTo(map).bindPopup(`<strong>${store.name}</strong><br>Sales: €${store.sales}`);
+
+      // Influence area
+      L.circle([store.lat, store.lon], {
+        radius: 5000,
+        color,
+        fillOpacity: 0.1,
+        interactive: false
+      }).addTo(map);
+    });
+
+    // ==== Show Competitors ====
+    competitors.forEach(comp => {
+      L.circleMarker([comp.lat, comp.lon], {
+        radius: 6,
+        color: 'red',
+        fillOpacity: 0.7
+      }).addTo(map).bindPopup(`<strong>Competitor:</strong> ${comp.name}`);
+    });
+
+    // ==== Show Cities and Evaluate ====
+    cities.forEach(city => {
+      const cityPoint = turf.point([city.lon, city.lat]);
+
+      const nearbyOwn = yourStores.filter(store =>
+        turf.distance(cityPoint, turf.point([store.lon, store.lat]), { units: 'kilometers' }) <= 5
+      
+
+      );
+
+      const hasBadStore = nearbyOwn.some(s => s.sales < 50000);
+
+      const nearbyCompetitors = competitors.filter(comp =>
+        turf.distance(cityPoint, turf.point([comp.lon, comp.lat]), { units: 'kilometers' }) <= 5
+      );
+
+      const lowPopOrIncome = city.population < 300000 || city.income < 2700;
+      const overlap = nearbyOwn.length >= 1 || nearbyCompetitors.length >= 1;
+      const notRecommended = hasBadStore || overlap || lowPopOrIncome;
+
+      const color = notRecommended ? 'red' : 'green';
+      const label = notRecommended ? '🚫 Not Recommended' : '✅ Safe to Consider';
+
+      L.circleMarker([city.lat, city.lon], {
+        radius: 8,
+        color,
+        fillOpacity: 0.6
+      }).addTo(map).bindPopup(
+        `<strong>${city.name}</strong><br>` +
+        `Population: ${city.population}<br>` +
+        `Income: €${city.income}<br>` +
+        `Nearby stores: ${nearbyOwn.length}<br>` +
+        `Competitors: ${nearbyCompetitors.length}<br>` +
+        `Underperforming store nearby: ${hasBadStore ? 'Yes' : 'No'}<br><strong>${label}</strong>`
+      );
+    });
+
+    // === TODO: Add student logic to choose cities and justify selection ===
+  </script>
+</body>
+</html>
+
+
+
+
